@@ -17,16 +17,20 @@ namespace VehicleRegistration.WebAPI.Controllers
     {
         private readonly IUserService _userService;
         private readonly IJwtService _jwttokenService;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<AccountController> _logger;
 
         /// <summary>
         /// Controller for User SignUp and Login methods
         /// </summary>
         /// <param name="userService"></param>
         /// <param name="jwtService"></param>
-        public AccountController(IUserService userService, IJwtService jwtService)
+        public AccountController(IUserService userService, IJwtService jwtService, IConfiguration configuration, ILogger<AccountController> logger)
         {
             _userService = userService;
             _jwttokenService = jwtService;
+            _configuration = configuration;
+            _logger = logger;
         }
         
         /// <summary>
@@ -35,11 +39,10 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpPost("signup")]
-        [ProducesResponseType(201)] // Created 
-        [ProducesResponseType(400)]
-        [ProducesResponseType(409)] // Conflict
         public async Task<IActionResult> SignUp([FromBody] User user)
         {
+            _logger.LogInformation("API {controllerName}.{methodName} method", nameof(AccountController), nameof(SignUp));
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -72,9 +75,10 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <param name="login"></param>
         /// <returns></returns>
         [HttpPost("login")]
-        [ProducesResponseType(401)]
         public async Task<IActionResult> Login([FromBody] Login login)
         {
+            _logger.LogInformation("API {controllerName}.{methodName} method", nameof(AccountController), nameof(Login));
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Reflection;
 using VehicleRegistration.Core.Interfaces;
 using VehicleRegistration.Core.Services;
 using VehicleRegistration.Infrastructure;
+using VehicleRegistration.WebAPI.Middleware;
 
 namespace VehicleRegistration.WebAPI
 {
@@ -21,6 +23,13 @@ namespace VehicleRegistration.WebAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            //Serilog
+            builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider services, LoggerConfiguration loggerConfiguration) =>
+            {
+                loggerConfiguration.ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services);
+            });
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -61,6 +70,7 @@ namespace VehicleRegistration.WebAPI
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -106,7 +116,9 @@ namespace VehicleRegistration.WebAPI
             app.UseSwaggerUI();
             app.UseRouting();
             app.UseCors();
-            app.UseAuthentication();
+            //app.UseAuthentication();
+            app.UseMiddleware<AuthorizationMiddleware>();
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseAuthorization();
             
             app.MapControllers();
