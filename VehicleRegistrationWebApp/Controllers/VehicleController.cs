@@ -38,12 +38,6 @@ namespace VehicleRegistrationWebApp.Controllers
         public IActionResult Addvehicledetails()
         {
             _logger.LogInformation("{Controller}.{methodName} method", nameof(VehicleController), nameof(Addvehicledetails));
-
-            string jwtToken = HttpContext.Session.GetString("Token")!;
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                return RedirectToAction("Login", "Home");
-            }
             return View();
         }
 
@@ -53,14 +47,13 @@ namespace VehicleRegistrationWebApp.Controllers
             _logger.LogInformation("{Controller}.{methodName} method", nameof(VehicleController), nameof(AddVehicleDetails));
 
             string jwtToken = HttpContext.Session.GetString("Token")!;
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                return RedirectToAction("Login", "Home");
-            }
+            var result = await _vehicleService.AddVehicles(model, jwtToken);
 
-            await _vehicleService.AddVehicles(model, jwtToken);
+            _logger.LogInformation($"{nameof(VehicleController)}: {result}");
+
             return RedirectToAction("GetVehiclesDetails");
         }
+
 
         [HttpGet("editVehicle")]
         public async Task<IActionResult> EditVehicleDetails(Guid vehicleId)

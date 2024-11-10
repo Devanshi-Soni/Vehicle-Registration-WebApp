@@ -44,20 +44,27 @@
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="VehicleClass" class="control-label"></label>
-                <select name="VehicleClass" class="w-75">
-                    <option value="SUV">Suv</option>
+            <div class="form-group mb-3">
+                <label asp-for="VehicleClass" class="form-label"></label>
+                <select asp-for="VehicleClass" class="form-select">
+                    <option value="">Select Vehicle Class</option>
+                    <option value="SUV">SUV</option>
                     <option value="HandBook">Handbook</option>
                 </select>
                 <span asp-validation-for="VehicleClass" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="FuelType" class="control-label"></label>
-                <input asp-for="FuelType" class="form-control" />
+            <div class="form-group mb-3">
+                <label asp-for="FuelType" class="form-label"></label>
+                <select asp-for="FuelType" class="form-select">
+                    <option value="">Select Fuel Type</option>
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Gasoline">Gasoline (CNG)</option>
+                </select>
                 <span asp-validation-for="FuelType" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
