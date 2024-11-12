@@ -29,10 +29,10 @@ namespace VehicleRegistration.Core.Services
             return result!;
         }
 
-        public async Task<UserModel> GetUserBYEmaiIdAsync(string userEmail)
+        public async Task<UserModel> GetUserByIdAsync(int userId)
         {
             _logger.LogInformation("API'S {serviceName}.{methodName} method", nameof(UserService), nameof(GetUserByIdAsync));
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserEmail == userEmail);
+            var user = await _context.Users.FindAsync(userId);
             return user!;
         }
 

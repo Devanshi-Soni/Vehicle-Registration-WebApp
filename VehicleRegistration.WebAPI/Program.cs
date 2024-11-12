@@ -7,6 +7,7 @@ using System.Reflection;
 using VehicleRegistration.Core.Interfaces;
 using VehicleRegistration.Core.Services;
 using VehicleRegistration.Infrastructure;
+using VehicleRegistration.Manager;
 using VehicleRegistration.WebAPI.Middleware;
 
 namespace VehicleRegistration.WebAPI
@@ -91,9 +92,12 @@ namespace VehicleRegistration.WebAPI
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
             });
-
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IUserManager, UserManager>();
+            builder.Services.AddScoped<IVehicleManager, VehicleManager>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IVehicleService, VehicleService>();
+            builder.Services.AddScoped<IFileService, FileService>();
 
             // Service for Jwt Token 
             builder.Services.AddSingleton<IJwtService, JwtService>();

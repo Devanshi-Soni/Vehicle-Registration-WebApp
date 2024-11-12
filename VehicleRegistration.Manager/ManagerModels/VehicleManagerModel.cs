@@ -1,11 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-// model for adding the vehicle details when client calls the Add method 
-namespace VehicleRegistration.WebAPI.Models
+namespace VehicleRegistration.Manager.ManagerModels
 {
-    public class Vehicle
+    public class VehicleManagerModel
     {
-        public Guid VehicleId { get; set; } 
+        public Guid VehicleId { get; set; }
         public string VehicleNumber { get; set; }
         public string? Description { get; set; }
         public string VehicleOwnerName { get; set; }

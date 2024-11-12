@@ -1,10 +1,12 @@
 ﻿using Azure.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VehicleRegistration.Core.Interfaces;
 using VehicleRegistration.Infrastructure.DataBaseModels;
-using VehicleRegistration.WebAPI.Models;
+using VehicleRegistration.Manager;
+using VehicleRegistration.Manager.ManagerModels;
 
 namespace VehicleRegistration.WebAPI.Controllers
 {
@@ -15,7 +17,7 @@ namespace VehicleRegistration.WebAPI.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IUserManager _userManager;
         private readonly IJwtService _jwttokenService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AccountController> _logger;
@@ -23,11 +25,10 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <summary>
         /// Controller for User SignUp and Login methods
         /// </summary>
-        /// <param name="userService"></param>
         /// <param name="jwtService"></param>
-        public AccountController(IUserService userService, IJwtService jwtService, IConfiguration configuration, ILogger<AccountController> logger)
+        public AccountController(IUserManager userManager, IJwtService jwtService, IConfiguration configuration, ILogger<AccountController> logger)
         {
-            _userService = userService;
+            _userManager = userManager;
             _jwttokenService = jwtService;
             _configuration = configuration;
             _logger = logger;
@@ -39,34 +40,26 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] User user)
+        public async Task<IActionResult> SignUp([FromBody] UserManagerModel user)
         {
             _logger.LogInformation("API {controllerName}.{methodName} method", nameof(AccountController), nameof(SignUp));
 
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            //Check if the username already exists
-            var existingUser = await _userService.GetUserByNameAsync(user.UserName);
-            if (existingUser != null)
+            try
             {
-                return Conflict(new { Message = "Username already exists" });
+                if (await _userManager.NewUser(user) == null)
+                {
+                    return Conflict(new { Message = "Username already exists" });
+                }
+                else
+                {
+                    return Ok("Successfully Signed In \nWelcome to Vehicle Registration App");
+                }
             }
-            
-            // Check if the UserEmail already exists 
-            var existingUser1 = await _userService.GetUserBYEmaiIdAsync(user.Email);
-            if (existingUser1 != null)
-                return Conflict(new { Message = "Username already exists" });
-
-            // Create a new user
-            var newUser = new UserModel
+            catch (Exception ex)
             {
-                UserName = user.UserName,
-                UserEmail = user.Email
-            };
-
-            await _userService.AddUser(newUser, user.Password);
-            return Ok("Successfully Signed In \nWelcome to Vehicle Registration App");
+                _logger.LogError(ex, "_UserManager : Something went wrong while signing up.");
+                throw;
+            }
         }
 
         /// <summary>
@@ -75,26 +68,22 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <param name="login"></param>
         /// <returns></returns>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Login login)
+        public async Task<IActionResult> Login([FromBody] LoginManagerModel login)
         {
             _logger.LogInformation("API {controllerName}.{methodName} method", nameof(AccountController), nameof(Login));
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var isAuthenticated = await _userService.AuthenticateUser(login.UserName, login.Password);
+            var (isAuthenticated, message, token, expiration) = await _userManager.LoginUser(login);
 
             if (!isAuthenticated)
                 return Unauthorized("Invalid credentials");
 
-            var user = await _userService.GetUserByNameAsync(login.UserName);
-            var tokenResponse = _jwttokenService.CreateJwtToken(user);
-
             return Ok(new
             {
                 Message = "Logged In Successfully",
-                JwtToken = tokenResponse.Token,
-                TokenExpiration = tokenResponse.Expiration
+                JwtToken = token,
+                TokenExpiration = expiration
             });
         }
     }

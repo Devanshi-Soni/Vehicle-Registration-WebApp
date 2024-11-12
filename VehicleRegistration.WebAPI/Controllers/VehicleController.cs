@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using VehicleRegistration.Infrastructure.DataBaseModels;
 using VehicleRegistration.Core.Interfaces;
-using VehicleRegistration.WebAPI.Models;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using VehicleRegistration.Infrastructure;
 using Microsoft.Data.SqlClient;
+using VehicleRegistration.Manager;
 
 namespace VehicleRegistration.WebAPI.Controllers
 {
@@ -15,8 +15,7 @@ namespace VehicleRegistration.WebAPI.Controllers
 
     public class VehicleController : ControllerBase
     {
-        private readonly IVehicleService _vehicleService;
-        private readonly ApplicationDbContext _context;
+        private readonly IVehicleManager _vehicleManager;
         private readonly ILogger<VehicleController> _logger;
 
         /// <summary>
@@ -24,10 +23,9 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// </summary>
         /// <param name="vehicleService"></param>
         /// <param name="context"></param>
-        public VehicleController(IVehicleService vehicleService, ApplicationDbContext context, ILogger<VehicleController> logger)
+        public VehicleController(IVehicleManager vehicleManager, ILogger<VehicleController> logger)
         {
-            _vehicleService = vehicleService; 
-            _context = context; 
+            _vehicleManager = vehicleManager;   
             _logger = logger;
         }
 
