@@ -29,8 +29,8 @@ namespace VehicleRegistration.Core.Services
             List<Claim> claims = new()
             {
                  new Claim("TokenId", tokenId),
-                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()), 
-                 new Claim(ClaimTypes.Name, user.UserName)
+                 new Claim("UserId", user.UserId.ToString()),
+                 new Claim("UserName", user.UserName)
             };
 
             SecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

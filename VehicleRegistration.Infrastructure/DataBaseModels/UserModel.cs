@@ -18,6 +18,6 @@ namespace VehicleRegistration.Infrastructure.DataBaseModels
         [MaxLength(32)]
         public string Salt { get; set; }
         public string? ProfileImagepath { get; set; }
-        public ICollection<VehicleModel> Vehicles { get; set; }
+        public ICollection<VehicleModel> Vehicles { get; set; } 
     }
 }
