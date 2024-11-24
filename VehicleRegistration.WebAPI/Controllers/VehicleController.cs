@@ -7,6 +7,7 @@ using System.Security.Claims;
 using VehicleRegistration.Infrastructure;
 using Microsoft.Data.SqlClient;
 using VehicleRegistration.Manager;
+using VehicleRegistration.Manager.ManagerModels;
 
 namespace VehicleRegistration.WebAPI.Controllers
 {
@@ -40,7 +41,7 @@ namespace VehicleRegistration.WebAPI.Controllers
 
             _logger.LogInformation($"Get all vehicles associated with user: {userId}");
 
-            var vehicles = await _vehicleService.GetVehicleDetails(userId);
+            var vehicles = await _vehicleManager.GetVehicleDetails(userId);
             return Ok(vehicles);
         }
 
@@ -50,35 +51,19 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <param name="vehicle"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        public async Task<IActionResult> AddNewVehicle([FromBody] Vehicle vehicle)
+        public async Task<IActionResult> AddNewVehicle(VehicleManagerModel vehicle)
         {
             _logger.LogInformation($"Add vehicle request");
-
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            var newVehicle = new VehicleModel
-            {
-                VehicleId = new Guid(), 
-                VehicleNumber = vehicle.VehicleNumber,
-                Description = vehicle.Description,
-                VehicleOwnerName = vehicle.VehicleOwnerName,
-                OwnerAddress = vehicle.OwnerAddress,
-                OwnerContactNumber = vehicle.OwnerContactNumber,
-                Email = vehicle.Email,
-                VehicleClass = vehicle.VehicleClass,
-                FuelType = vehicle.FuelType,
-                UserId = int.Parse(userId!)
-            };
             try
             {
-                await _vehicleService.AddVehicle(newVehicle);
+                var addedVehicle = await _vehicleManager.AddVehicle(vehicle);
                 return Ok("Vehicle Added Successfully");
             }
             catch (SqlException ex)
             {
-                throw new Exception("Error while saving vehicle to the database.", ex);
+                throw new Exception("Error while adding vehicle to the database.", ex);
             }
         }
 
@@ -88,34 +73,14 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <param name="vehicle"></param>
         /// <returns></returns>
         [HttpPut("edit")]
-        public async Task<IActionResult> EditVehicle([FromBody] Vehicle vehicle)
+        public async Task<IActionResult> EditVehicle([FromBody] VehicleManagerModel vehicle)
         {
             _logger.LogInformation($"Edit vehicle Details");
-
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null)
-            {
-                return Unauthorized("User not authenticated.");
-            }
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var vehicleModel = new VehicleModel
-            {
-                VehicleId = vehicle.VehicleId,
-                VehicleNumber = vehicle.VehicleNumber,
-                Description = vehicle.Description,
-                VehicleOwnerName = vehicle.VehicleOwnerName,
-                OwnerAddress = vehicle.OwnerAddress,
-                OwnerContactNumber = vehicle.OwnerContactNumber,
-                Email = vehicle.Email,
-                VehicleClass = vehicle.VehicleClass,
-                FuelType = vehicle.FuelType,
-                UserId = int.Parse(userId) 
-            };
-            var updatedVehicle = await _vehicleService.EditVehicle(vehicleModel , userId);
-
+            var updatedVehicle = await _vehicleManager.EditVehicle(vehicle);
             if (updatedVehicle == null)
             {
                 return Ok("No modifications applied. The vehicle details are already up-to-date.");
@@ -130,16 +95,15 @@ namespace VehicleRegistration.WebAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
+        [ProducesResponseType(401)]
         public async Task<IActionResult> DeleteVehicle(Guid id)
         {
             _logger.LogInformation($"Delete vehicle with Vehicle Id:{id}");
-
-            var existingVehicle = await _vehicleService.GetVehicleByIdAsync(id);
-            if (existingVehicle == null)
+            var isDeleted = await _vehicleManager.DeleteVehicle(id);
+            if (!isDeleted)
                 return NotFound();
 
-            await _vehicleService.DeleteVehicle(id);
-            return Ok("Vehicle Deleted successfully"); 
+            return Ok("Vehicle Deleted successfully");
         }
 
         /// <summary>
@@ -152,8 +116,7 @@ namespace VehicleRegistration.WebAPI.Controllers
         public async Task<IActionResult> GetVehicleById(Guid id)
         {
             _logger.LogInformation($"Getting vehicle by Id : {id}");
-
-            var vehicle = await _vehicleService.GetVehicleByIdAsync(id);
+            var vehicle = await _vehicleManager.GetVehicleByIdAsync(id);
             if (vehicle == null)
                 return NotFound();
 

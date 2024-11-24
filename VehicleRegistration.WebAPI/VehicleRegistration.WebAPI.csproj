@@ -16,12 +16,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.7" />
+    <PackageReference Include="Serilog" Version="4.1.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\VehicleRegistration.Core\VehicleRegistration.Core.csproj" />
     <ProjectReference Include="..\VehicleRegistration.Infrastructure\VehicleRegistration.Infrastructure.csproj" />
+    <ProjectReference Include="..\VehicleRegistration.Manager\VehicleRegistration.Manager.csproj" />
   </ItemGroup>
 
 </Project>

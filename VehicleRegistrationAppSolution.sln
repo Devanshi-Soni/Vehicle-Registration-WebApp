@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VehicleRegistrationWebApp",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VehicleRegistrationAppTest", "VehicleRegistrationAppTest\VehicleRegistrationAppTest.csproj", "{4A977FD2-AB7F-40FA-8E05-12BA214375ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VehicleRegistration.Manager", "VehicleRegistration.Manager\VehicleRegistration.Manager.csproj", "{2D9CBCC8-340F-4952-B302-678DF90F6C0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{4A977FD2-AB7F-40FA-8E05-12BA214375ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A977FD2-AB7F-40FA-8E05-12BA214375ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A977FD2-AB7F-40FA-8E05-12BA214375ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D9CBCC8-340F-4952-B302-678DF90F6C0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D9CBCC8-340F-4952-B302-678DF90F6C0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D9CBCC8-340F-4952-B302-678DF90F6C0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D9CBCC8-340F-4952-B302-678DF90F6C0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -33,7 +33,7 @@ namespace VehicleRegistration.WebAPI.Controllers
             _configuration = configuration;
             _logger = logger;
         }
-        
+
         /// <summary>
         /// Method for Registering new User
         /// </summary>
@@ -85,6 +85,60 @@ namespace VehicleRegistration.WebAPI.Controllers
                 JwtToken = token,
                 TokenExpiration = expiration
             });
+        }
+
+        [HttpPost("uploadImage")]
+        public async Task<IActionResult> UploadProfileImage(IFormFile file)
+        {
+            _logger.LogInformation("API {controllerName}.{methodName} method", nameof(AccountController), nameof(UploadProfileImage));
+            try
+            {
+                if (file != null)
+                {
+                    var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ProfileImages");
+                    if (!Directory.Exists(imagePath))
+                    {
+                        Directory.CreateDirectory(imagePath);
+                    }
+
+                    var fileName = Path.GetFileName(file.FileName);
+
+                    var userId = int.Parse(User.FindFirst("UserId")?.Value);
+
+                    var user = await _userManager.GetUser(userId);
+
+                    var (success, filePath) = await _userManager.UploadImageAsync(fileName, user);
+
+                    var fullFilePath = Path.Combine(imagePath, fileName);
+
+                    using (var stream = new FileStream(fullFilePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    if (success && !string.IsNullOrEmpty(filePath))
+                    {
+                        var responsePath = fullFilePath;
+                        return Ok(new
+                        {
+                            Path = responsePath
+                        });
+                    }
+                    else
+                    {
+                        return StatusCode(500, "Failed to upload image to database");
+                    }
+                }
+                else
+                {
+                    return BadRequest("No file uploaded");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occured while uploading profile image");
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
 }

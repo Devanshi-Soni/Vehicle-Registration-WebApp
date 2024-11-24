@@ -19,17 +19,17 @@ namespace VehicleRegistrationWebApp.Controllers
             _logger = logger;
         }
         [HttpGet("getVehicles")]
-        public async Task<IActionResult> GetVehiclesDetails()
+        public async Task<IActionResult> GetVehiclesDetails(string imagePath)
         {
             _logger.LogInformation("{Controller}.{methodName} method", nameof(VehicleController), nameof(GetVehiclesDetails));
-
+            ViewBag.ImagePath = imagePath;
             string jwtToken = HttpContext.Session.GetString("Token")!;
-            if (string.IsNullOrEmpty(jwtToken) ) 
-            {
-               return RedirectToAction("Login", "Home");
-            }
 
             var vehicles = await _vehicleService.GetVehicles(jwtToken);
+            if (TempData["Message"] != null)
+            {
+                ViewBag.Message = TempData["Message"];
+            }
             _logger.LogInformation("Vehicles Received");
             return View(vehicles);
         }
@@ -55,7 +55,7 @@ namespace VehicleRegistrationWebApp.Controllers
         }
 
 
-        [HttpGet("editVehicle")]
+        [HttpGet]
         public async Task<IActionResult> EditVehicleDetails(Guid vehicleId)
         {
             _logger.LogDebug($"Edit request with vehicleId: {vehicleId}");
@@ -105,24 +105,18 @@ namespace VehicleRegistrationWebApp.Controllers
             }
         }
 
+
         [HttpGet("deleteVehicle")]
         public async Task<IActionResult> DeleteVehicle([FromQuery] Guid vehicleId)
         {
-
             _logger.LogInformation($"delete vehicle with vehicle Id: {vehicleId}");
             string jwtToken = HttpContext.Session.GetString("Token")!;
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                return RedirectToAction("Login", "Home");
-            }
-
             var vehicle = await _vehicleService.GetVehicleByIdAsync(vehicleId, jwtToken);
             if (vehicle == null)
             {
                 return NotFound();
             }
-
-            return View("DeleteVehicle",vehicle);
+            return View("DeleteVehicle", vehicle);
         }
 
         [HttpPost]
@@ -130,13 +124,18 @@ namespace VehicleRegistrationWebApp.Controllers
         {
             _logger.LogDebug($"Vehicle with Id: {vehicleId}");
             _logger.LogInformation($"Delete Vehicle post request");
-            string jwtToken = HttpContext.Session.GetString("Token")!;
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                return RedirectToAction("Login", "Home");
-            }
 
-            await _vehicleService.DeleteVehicles(vehicleId, jwtToken);
+            string jwtToken = HttpContext.Session.GetString("Token")!;
+            var result = await _vehicleService.DeleteVehicles(vehicleId, jwtToken);
+            if (result == "Vehicle Deleted successfully")
+            {
+                TempData["Message"] = "Vehicle deleted successfully!";
+                return RedirectToAction("GetVehiclesDetails");
+            }
+            else
+            {
+                TempData["Message"] = "Failed to delete the vehicle.";
+            }
             _logger.LogInformation($"vehicle deleted successfully: {result}");
             return RedirectToAction("GetVehiclesDetails", "Vehicle");
         }
@@ -151,21 +150,23 @@ namespace VehicleRegistrationWebApp.Controllers
         public async Task<IActionResult> GetVehicleById([FromQuery] VehicleRequest request)
         {
             _logger.LogInformation("{Controller}.{methodName} method", nameof(VehicleController), nameof(GetVehicleById));
-
             string jwtToken = HttpContext.Session.GetString("Token")!;
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                return RedirectToAction("Login", "Home");
-            }
 
             var vehicle = await _vehicleService.GetVehicleByIdAsync(request.VehicleId, jwtToken);
-             if (vehicle == null)
-             {
-                 return NotFound();
-             }
+            if (vehicle == null)
+            {
+                return NotFound();
+            }
             _logger.LogInformation($"Vehicle data with vehicle number: {vehicle.VehicleNumber}");
-
             return View(vehicle);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetVehiclesExcel()
+        {
+            string jwtToken = HttpContext.Session.GetString("Token")!;
+            MemoryStream memoryStream = await _vehicleService.GetVehiclesExcel(jwtToken);
+            return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Vehicles.xlsx");
         }
     }
 }
